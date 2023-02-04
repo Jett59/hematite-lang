@@ -3,6 +3,12 @@
 version = 3
 
 [[package]]
+name = "arrayvec"
+version = "0.7.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8da52d66c7071e2e3fa2a1e5c6d088fec47b593032b254f5e980de8ea54454d6"
+
+[[package]]
 name = "bitflags"
 version = "1.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -79,10 +85,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "95505c38b4572b2d910cecb0281560f54b440a19336cbbcb27bf6ce6adc6f5a8"
 
 [[package]]
+name = "helper_macros"
+version = "0.1.0"
+
+[[package]]
 name = "hematite-lang"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "helper_macros",
+ "utf8-chars",
 ]
 
 [[package]]
@@ -224,6 +236,15 @@ name = "unicode-ident"
 version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "84a22b9f218b40614adcb3f4ff08b703773ad44fa9423e4e0d346d5db86e4ebc"
+
+[[package]]
+name = "utf8-chars"
+version = "2.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "437bc4a6a3acdb2a99491b19ec1c2131a536d9f1d7da112341ec5c9e5f4dfc3a"
+dependencies = [
+ "arrayvec",
+]
 
 [[package]]
 name = "version_check"
