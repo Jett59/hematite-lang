@@ -55,7 +55,7 @@ impl TokenParser for IdentifierParser {
     fn accept(&self, character: char) -> Option<Box<dyn TokenParser>> {
         if character.is_alphabetic()
             || character == '_'
-            || (self.so_far.len() != 0 && character.is_ascii_digit())
+            || (!self.so_far.is_empty() && character.is_ascii_digit())
         {
             Some(Box::new(IdentifierParser {
                 so_far: format!("{}{}", self.so_far, character),

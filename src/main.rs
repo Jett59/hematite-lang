@@ -4,6 +4,7 @@ use utf8_chars::BufReadCharsExt;
 
 use clap::Parser;
 
+mod ast;
 mod lexer;
 
 #[derive(Debug, clap::Parser)]
