@@ -6,6 +6,7 @@ use clap::Parser;
 
 mod ast;
 mod lexer;
+mod parser;
 
 #[derive(Debug, clap::Parser)]
 struct CommandLineOptions {
@@ -29,8 +30,14 @@ fn main() {
     let character_iterator = buffered_file_reader.chars();
     let mut character_iterator =
         character_iterator.map(|possibly_char| possibly_char.expect("Failed to read from file"));
-    let token_reader = lexer::tokenize(&mut character_iterator);
-    for token in token_reader {
-        println!("{token:?}");
+    let token_iterator = lexer::tokenize(&mut character_iterator);
+    let parse_result = parser::parse(&mut token_iterator.peekable());
+    match parse_result {
+        Ok(program) => {
+            println!("Parsed program: {program:#?}");
+        }
+        Err(error) => {
+            println!("Error: {error:?}");
+        }
     }
 }

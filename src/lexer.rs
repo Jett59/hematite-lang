@@ -1,6 +1,9 @@
-use std::iter::Peekable;
+use std::{
+    fmt::{self, Display, Formatter},
+    iter::Peekable,
+};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Token {
     Identifier(String),
     MacroCall(String),
@@ -30,6 +33,40 @@ pub enum Token {
     Else,
 
     Error(String),
+}
+
+impl Display for Token {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Token::Identifier(s) => write!(f, "'{s}'"),
+            Token::MacroCall(s) => write!(f, "'{s}!'"),
+            Token::Integer(i) => write!(f, "'{i}'"),
+            Token::Float(value) => write!(f, "'{value}'"),
+            Token::String(s) => write!(f, "'\"{s}\"'"),
+            Token::Char(c) => write!(f, "\"'{c}'\""),
+            Token::LeftParen => write!(f, "'('"),
+            Token::RightParen => write!(f, "')'"),
+            Token::LeftBrace => write!(f, "'{{'"),
+            Token::RightBrace => write!(f, "'}}'"),
+            Token::LeftBracket => write!(f, "'['"),
+            Token::RightBracket => write!(f, "']'"),
+            Token::Comma => write!(f, "','"),
+            Token::Dot => write!(f, "'.'"),
+            Token::Colon => write!(f, "':'"),
+            Token::Semicolon => write!(f, "';'"),
+            Token::Plus => write!(f, "'+'"),
+            Token::Minus => write!(f, "'-'"),
+            Token::Star => write!(f, "'*'"),
+            Token::Slash => write!(f, "'/'"),
+            Token::Percent => write!(f, "'%'"),
+            Token::Arrow => write!(f, "'->'"),
+            Token::Function => write!(f, "'function'"),
+            Token::Let => write!(f, "'let'"),
+            Token::If => write!(f, "'if'"),
+            Token::Else => write!(f, "'else'"),
+            Token::Error(s) => write!(f, "'{s}'"),
+        }
+    }
 }
 
 trait TokenParser {
