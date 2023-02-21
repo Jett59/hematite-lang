@@ -9,7 +9,7 @@ pub enum Token {
     MacroCall(String),
     Integer(i128),
     Float(f64),
-    String(String),
+    StringLiteral(String),
     Char(char),
     LeftParen,
     RightParen,
@@ -31,6 +31,21 @@ pub enum Token {
     Let,
     If,
     Else,
+    I8,
+    I16,
+    I32,
+    I64,
+    Iptr,
+    U8,
+    U16,
+    U32,
+    U64,
+    Uptr,
+    F32,
+    F64,
+    Bool,
+    CharType,
+    StringType,
 
     Error(String),
 }
@@ -42,7 +57,7 @@ impl Display for Token {
             Token::MacroCall(s) => write!(f, "'{s}!'"),
             Token::Integer(i) => write!(f, "'{i}'"),
             Token::Float(value) => write!(f, "'{value}'"),
-            Token::String(s) => write!(f, "'\"{s}\"'"),
+            Token::StringLiteral(s) => write!(f, "'\"{s}\"'"),
             Token::Char(c) => write!(f, "\"'{c}'\""),
             Token::LeftParen => write!(f, "'('"),
             Token::RightParen => write!(f, "')'"),
@@ -64,6 +79,21 @@ impl Display for Token {
             Token::Let => write!(f, "'let'"),
             Token::If => write!(f, "'if'"),
             Token::Else => write!(f, "'else'"),
+            Token::I8 => write!(f, "'i8'"),
+            Token::I16 => write!(f, "'i16'"),
+            Token::I32 => write!(f, "'i32'"),
+            Token::I64 => write!(f, "'i64'"),
+            Token::Iptr => write!(f, "'iptr'"),
+            Token::U8 => write!(f, "'u8'"),
+            Token::U16 => write!(f, "'u16'"),
+            Token::U32 => write!(f, "'u32'"),
+            Token::U64 => write!(f, "'u64'"),
+            Token::Uptr => write!(f, "'uptr'"),
+            Token::F32 => write!(f, "'f32'"),
+            Token::F64 => write!(f, "'f64'"),
+            Token::Bool => write!(f, "'bool'"),
+            Token::CharType => write!(f, "'char'"),
+            Token::StringType => write!(f, "'string'"),
             Token::Error(s) => write!(f, "'{s}'"),
         }
     }
@@ -265,7 +295,7 @@ impl TokenParser for StringParser {
     }
     fn complete(&self) -> Option<Token> {
         if self.found_terminal_quote {
-            Some(Token::String(self.so_far.clone()))
+            Some(Token::StringLiteral(self.so_far.clone()))
         } else {
             None
         }
@@ -292,6 +322,21 @@ helper_macros::exact_match_token! {Function: "function"}
 helper_macros::exact_match_token! {Let: "let"}
 helper_macros::exact_match_token! {If: "if"}
 helper_macros::exact_match_token! {Else: "else"}
+helper_macros::exact_match_token! {I8: "i8"}
+helper_macros::exact_match_token! {I16: "i16"}
+helper_macros::exact_match_token! {I32: "i32"}
+helper_macros::exact_match_token! {I64: "i64"}
+helper_macros::exact_match_token! {Iptr: "iptr"}
+helper_macros::exact_match_token! {U8: "u8"}
+helper_macros::exact_match_token! {U16: "u16"}
+helper_macros::exact_match_token! {U32: "u32"}
+helper_macros::exact_match_token! {U64: "u64"}
+helper_macros::exact_match_token! {Uptr: "uptr"}
+helper_macros::exact_match_token! {F32: "f32"}
+helper_macros::exact_match_token! {F64: "f64"}
+helper_macros::exact_match_token! {Bool: "bool"}
+helper_macros::exact_match_token! {CharType: "char"}
+helper_macros::exact_match_token! {StringType: "string"}
 
 pub struct TokenIterator<'base_iterator> {
     base_iterator: Peekable<&'base_iterator mut dyn Iterator<Item = char>>,
@@ -318,6 +363,21 @@ impl Iterator for TokenIterator<'_> {
             Box::new(LetParser::new()),
             Box::new(IfParser::new()),
             Box::new(ElseParser::new()),
+            Box::new(I8Parser::new()),
+            Box::new(I16Parser::new()),
+            Box::new(I32Parser::new()),
+            Box::new(I64Parser::new()),
+            Box::new(IptrParser::new()),
+            Box::new(U8Parser::new()),
+            Box::new(U16Parser::new()),
+            Box::new(U32Parser::new()),
+            Box::new(U64Parser::new()),
+            Box::new(UptrParser::new()),
+            Box::new(F32Parser::new()),
+            Box::new(F64Parser::new()),
+            Box::new(BoolParser::new()),
+            Box::new(CharTypeParser::new()),
+            Box::new(StringTypeParser::new()),
             Box::new(IdentifierParser::new()),
             Box::new(MacroCallParser::new()),
             Box::new(FloatParser::new()),
