@@ -9,6 +9,7 @@ pub trait AstVisitor {
     fn visit_parameter_declaration(&mut self, parameter: &ParameterDeclaration);
     fn visit_function_definition(&mut self, function: &FunctionDefinition);
     fn visit_ignore_value(&mut self, ignore_value: &IgnoreValue);
+    fn visit_integer_literal(&mut self, integer_literal: &i128);
 }
 
 pub trait AstNode: DynClone + fmt::Debug {
@@ -133,3 +134,5 @@ impl IgnoreValue {
 }
 
 impl_ast_node!(IgnoreValue, visit_ignore_value);
+
+impl_ast_node!(i128, visit_integer_literal);

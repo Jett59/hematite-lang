@@ -68,7 +68,9 @@ fn parse_repeated_item(
     loop {
         let token = token_iterator.peek();
         if token == end.as_ref() {
-            token_iterator.next().unwrap();
+            if end != None {
+                token_iterator.next().unwrap();
+            }
             return Ok(items);
         } else if token.is_none() {
             return Err(SyntaxError::unexpected_end());
@@ -120,7 +122,13 @@ fn parse_variable_definition(token_iterator: &mut TokenIterator) -> ParsedItem {
 }
 
 fn parse_expression(token_iterator: &mut TokenIterator) -> ParsedItem {
-    Err(SyntaxError::unexpected(token_iterator.peek()))
+    match token_iterator.next() {
+        Some(token) => match token {
+            Integer(value) => Ok(Box::new(value)),
+            _ => Err(SyntaxError::unexpected_token(&token)),
+        },
+        None => Err(SyntaxError::unexpected_end()),
+    }
 }
 
 fn parse_statement(token_iterator: &mut TokenIterator) -> ParsedItem {
