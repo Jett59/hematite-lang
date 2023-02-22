@@ -3,9 +3,10 @@ use core::fmt;
 use dyn_clone::DynClone;
 
 pub trait AstVisitor {
-    fn visit_program(&mut self, program: &Program);
+    fn visit_list(&mut self, list: &[Box<dyn AstNode>]);
     fn visit_type(&mut self, type_value: &Type);
     fn visit_parameter_declaration(&mut self, parameter: &ParameterDeclaration);
+    fn visit_function_definition(&mut self, function: &FunctionDefinition);
 }
 
 pub trait AstNode: DynClone + fmt::Debug {
@@ -28,18 +29,7 @@ macro_rules! impl_ast_node {
     };
 }
 
-#[derive(Clone, Debug)]
-pub struct Program {
-    children: Vec<Box<dyn AstNode>>,
-}
-
-impl Program {
-    pub fn new(children: Vec<Box<dyn AstNode>>) -> Self {
-        Self { children }
-    }
-}
-
-impl_ast_node!(Program, visit_program);
+impl_ast_node!(Vec<Box<dyn AstNode>>, visit_list);
 
 #[derive(Clone, Debug)]
 pub enum Type {
@@ -78,3 +68,29 @@ impl ParameterDeclaration {
 }
 
 impl_ast_node!(ParameterDeclaration, visit_parameter_declaration);
+
+#[derive(Clone, Debug)]
+pub struct FunctionDefinition {
+    name: String,
+    parameters: Vec<Box<dyn AstNode>>,
+    return_type: Box<dyn AstNode>,
+    body: Box<dyn AstNode>,
+}
+
+impl FunctionDefinition {
+    pub fn new(
+        name: String,
+        parameters: Vec<Box<dyn AstNode>>,
+        return_type: Box<dyn AstNode>,
+        body: Box<dyn AstNode>,
+    ) -> Self {
+        Self {
+            name,
+            parameters,
+            return_type,
+            body,
+        }
+    }
+}
+
+impl_ast_node!(FunctionDefinition, visit_function_definition);

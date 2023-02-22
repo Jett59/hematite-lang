@@ -1,7 +1,7 @@
 use std::iter::Peekable;
 
 use crate::{
-    ast::{AstNode, ParameterDeclaration, Program, Type},
+    ast::{AstNode, FunctionDefinition, ParameterDeclaration, Type},
     lexer::{self, Token},
 };
 
@@ -81,6 +81,16 @@ fn parse_global_item(token_iterator: &mut TokenIterator) -> ParsedItem {
     }
 }
 
+fn parse_statement(token_iterator: &mut TokenIterator) -> ParsedItem {
+    Err(SyntaxError::unexpected(token_iterator.peek()))
+}
+
+fn parse_block(token_iterator: &mut TokenIterator) -> ParsedItem {
+    next_must_be!(token_iterator, LeftBrace);
+    let statements = parse_repeated_item(token_iterator, parse_statement, Some(RightBrace))?;
+    Ok(Box::new(statements))
+}
+
 fn parse_type(token_iterator: &mut TokenIterator) -> ParsedItem {
     match token_iterator.next() {
         Some(token) => match token {
@@ -123,23 +133,32 @@ fn parse_parameter_declaration(token_iterator: &mut TokenIterator) -> ParsedItem
 
 fn parse_function(token_iterator: &mut TokenIterator) -> ParsedItem {
     assert!(token_iterator.next() == Some(Token::Function));
-    let name = if let Some(Identifier(name)) = token_iterator.next() {
-        Ok(name)
+    let name = if let Some(Identifier(name)) = token_iterator.peek() {
+        Ok(name.clone())
     } else {
         Err(SyntaxError::unexpected(token_iterator.peek()))
     }?;
+    token_iterator.next().unwrap();
     next_must_be!(token_iterator, LeftParen);
     let parameters = parse_repeated_item(
         token_iterator,
         parse_parameter_declaration,
         Some(RightParen),
     )?;
-    Err(SyntaxError::unexpected(token_iterator.peek()))
+    next_must_be!(token_iterator, Arrow);
+    let return_type = parse_type(token_iterator)?;
+    let body = parse_block(token_iterator)?;
+    Ok(Box::new(FunctionDefinition::new(
+        name,
+        parameters,
+        return_type,
+        body,
+    )))
 }
 
 fn parse_program(token_iterator: &mut TokenIterator) -> ParsedItem {
     let children = parse_repeated_item(token_iterator, parse_global_item, None)?;
-    Ok(Box::new(Program::new(children)))
+    Ok(Box::new(children))
 }
 
 pub fn parse(token_iterator: &mut TokenIterator) -> Result<Box<dyn AstNode>, SyntaxError> {
