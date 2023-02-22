@@ -27,8 +27,10 @@ pub enum Token {
     Slash,
     Percent,
     Arrow,
+    Equals,
     Function,
     Let,
+    Mut,
     If,
     Else,
     I8,
@@ -75,8 +77,10 @@ impl Display for Token {
             Token::Slash => write!(f, "'/'"),
             Token::Percent => write!(f, "'%'"),
             Token::Arrow => write!(f, "'->'"),
+            Token::Equals => write!(f, "'='"),
             Token::Function => write!(f, "'function'"),
             Token::Let => write!(f, "'let'"),
+            Token::Mut => write!(f, "'mut'"),
             Token::If => write!(f, "'if'"),
             Token::Else => write!(f, "'else'"),
             Token::I8 => write!(f, "'i8'"),
@@ -318,8 +322,10 @@ helper_macros::exact_match_token! {Star: "*"}
 helper_macros::exact_match_token! {Slash: "/"}
 helper_macros::exact_match_token! {Percent: "%"}
 helper_macros::exact_match_token! {Arrow: "->"}
+helper_macros::exact_match_token! {Equals: "="}
 helper_macros::exact_match_token! {Function: "function"}
 helper_macros::exact_match_token! {Let: "let"}
+helper_macros::exact_match_token! {Mut: "mut"}
 helper_macros::exact_match_token! {If: "if"}
 helper_macros::exact_match_token! {Else: "else"}
 helper_macros::exact_match_token! {I8: "i8"}
@@ -361,6 +367,7 @@ impl Iterator for TokenIterator<'_> {
         let mut possibilities: Vec<Box<dyn TokenParser>> = vec![
             Box::new(FunctionParser::new()),
             Box::new(LetParser::new()),
+            Box::new(MutParser::new()),
             Box::new(IfParser::new()),
             Box::new(ElseParser::new()),
             Box::new(I8Parser::new()),
@@ -399,6 +406,7 @@ impl Iterator for TokenIterator<'_> {
             Box::new(SlashParser::new()),
             Box::new(PercentParser::new()),
             Box::new(ArrowParser::new()),
+            Box::new(EqualsParser::new()),
         ];
         let mut characters_read_so_far = String::new();
         while let Some(next_character) = self.base_iterator.peek() {

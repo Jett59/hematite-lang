@@ -1,4 +1,4 @@
-use std::{fs::File, io::BufReader};
+use std::{error::Error, fs::File, io::BufReader};
 
 use utf8_chars::BufReadCharsExt;
 
@@ -17,13 +17,13 @@ struct CommandLineOptions {
     /// 3 = aggressive optimizations
     #[clap(short = 'O', default_value = "2")]
     optimization_level: i32,
-    #[clap(short, long = "output")]
+    #[clap(short, long = "output", default_value = "<stdin>")]
     output_file: String,
 
     input_file: String,
 }
 
-fn main() {
+fn main() -> Result<(), Box<dyn Error>> {
     let options = CommandLineOptions::parse();
     let input_file = File::open(options.input_file).unwrap();
     let mut buffered_file_reader = BufReader::new(input_file);
@@ -31,13 +31,7 @@ fn main() {
     let mut character_iterator =
         character_iterator.map(|possibly_char| possibly_char.expect("Failed to read from file"));
     let token_iterator = lexer::tokenize(&mut character_iterator);
-    let parse_result = parser::parse(&mut token_iterator.peekable());
-    match parse_result {
-        Ok(program) => {
-            println!("Parsed program: {program:#?}");
-        }
-        Err(error) => {
-            println!("Error: {error:?}");
-        }
-    }
+    let program = parser::parse(&mut token_iterator.peekable())?;
+    println!("{:#?}", program);
+    Ok(())
 }

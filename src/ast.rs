@@ -4,9 +4,11 @@ use dyn_clone::DynClone;
 
 pub trait AstVisitor {
     fn visit_list(&mut self, list: &[Box<dyn AstNode>]);
+    fn visit_variable_definition(&mut self, variable: &VariableDefinition);
     fn visit_type(&mut self, type_value: &Type);
     fn visit_parameter_declaration(&mut self, parameter: &ParameterDeclaration);
     fn visit_function_definition(&mut self, function: &FunctionDefinition);
+    fn visit_ignore_value(&mut self, ignore_value: &IgnoreValue);
 }
 
 pub trait AstNode: DynClone + fmt::Debug {
@@ -30,6 +32,32 @@ macro_rules! impl_ast_node {
 }
 
 impl_ast_node!(Vec<Box<dyn AstNode>>, visit_list);
+
+#[derive(Clone, Debug)]
+pub struct VariableDefinition {
+    mutable: bool,
+    name: String,
+    variable_type: Box<dyn AstNode>,
+    value: Box<dyn AstNode>,
+}
+
+impl VariableDefinition {
+    pub fn new(
+        mutable: bool,
+        name: String,
+        variable_type: Box<dyn AstNode>,
+        value: Box<dyn AstNode>,
+    ) -> Self {
+        Self {
+            mutable,
+            name,
+            variable_type,
+            value,
+        }
+    }
+}
+
+impl_ast_node!(VariableDefinition, visit_variable_definition);
 
 #[derive(Clone, Debug)]
 pub enum Type {
@@ -94,3 +122,14 @@ impl FunctionDefinition {
 }
 
 impl_ast_node!(FunctionDefinition, visit_function_definition);
+
+#[derive(Clone, Debug)]
+pub struct IgnoreValue(Box<dyn AstNode>);
+
+impl IgnoreValue {
+    pub fn new(value: Box<dyn AstNode>) -> Self {
+        Self(value)
+    }
+}
+
+impl_ast_node!(IgnoreValue, visit_ignore_value);

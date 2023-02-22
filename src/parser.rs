@@ -1,7 +1,9 @@
-use std::iter::Peekable;
+use std::{error::Error, fmt::Display, iter::Peekable};
 
 use crate::{
-    ast::{AstNode, FunctionDefinition, ParameterDeclaration, Type},
+    ast::{
+        AstNode, FunctionDefinition, IgnoreValue, ParameterDeclaration, Type, VariableDefinition,
+    },
     lexer::{self, Token},
 };
 
@@ -13,6 +15,14 @@ use Token::*;
 pub struct SyntaxError {
     message: String,
 }
+
+impl Display for SyntaxError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Syntax error: {}", self.message)
+    }
+}
+
+impl Error for SyntaxError {}
 
 impl SyntaxError {
     fn unexpected_token(token: &Token) -> Self {
@@ -81,8 +91,54 @@ fn parse_global_item(token_iterator: &mut TokenIterator) -> ParsedItem {
     }
 }
 
-fn parse_statement(token_iterator: &mut TokenIterator) -> ParsedItem {
+fn parse_variable_definition(token_iterator: &mut TokenIterator) -> ParsedItem {
+    next_must_be!(token_iterator, Let);
+    let mutable = if token_iterator.peek() == Some(&Mut) {
+        token_iterator.next();
+        true
+    } else {
+        false
+    };
+    let name = match token_iterator.next() {
+        Some(token) => match token {
+            Identifier(name) => name,
+            _ => return Err(SyntaxError::unexpected_token(&token)),
+        },
+        None => return Err(SyntaxError::unexpected_end()),
+    };
+    next_must_be!(token_iterator, Colon);
+    let variable_type = parse_type(token_iterator)?;
+    next_must_be!(token_iterator, Equals);
+    let value = parse_expression(token_iterator)?;
+    next_must_be!(token_iterator, Semicolon);
+    Ok(Box::new(VariableDefinition::new(
+        mutable,
+        name,
+        variable_type,
+        value,
+    )))
+}
+
+fn parse_expression(token_iterator: &mut TokenIterator) -> ParsedItem {
     Err(SyntaxError::unexpected(token_iterator.peek()))
+}
+
+fn parse_statement(token_iterator: &mut TokenIterator) -> ParsedItem {
+    match token_iterator.peek() {
+        Some(token) => match token {
+            Let => parse_variable_definition(token_iterator),
+            _ => {
+                let expression = parse_expression(token_iterator)?;
+                if token_iterator.peek() == Some(&Semicolon) {
+                    token_iterator.next().unwrap();
+                    Ok(Box::new(IgnoreValue::new(expression)))
+                } else {
+                    Ok(expression)
+                }
+            }
+        },
+        None => Err(SyntaxError::unexpected_end()),
+    }
 }
 
 fn parse_block(token_iterator: &mut TokenIterator) -> ParsedItem {
